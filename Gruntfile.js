@@ -84,8 +84,8 @@ module.exports = function (grunt) {
         constants: {
           ENV: {
             name: 'development',
-            //apiEndpoint: 'http://localhost:3000'
-            apiEndpoint: 'https://cryptic-fortress-59506.herokuapp.com/'
+            apiEndpoint: 'http://localhost:3000'
+            //apiEndpoint: 'https://cryptic-fortress-59506.herokuapp.com/'
           }
         }
       },

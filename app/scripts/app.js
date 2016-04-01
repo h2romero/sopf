@@ -17,7 +17,8 @@
       .config(function ($routeProvider, RestangularProvider, ENV) {  // add RestangularProvider for REST
                                                                      // add ENV for environment
         //RestangularProvider.setBaseUrl('http://localhost:3000');   // add base url for REST
-        RestangularProvider.setBaseUrl(ENV.apiEndpoint);   // add base url for REST
+        //RestangularProvider.setBaseUrl(ENV.apiEndpoint);   // add base url for REST
+        RestangularProvider.setBaseUrl('https://cryptic-fortress-59506.herokuapp.com/');
 
         $routeProvider
           .when('/', {
