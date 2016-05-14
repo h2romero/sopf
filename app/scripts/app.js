@@ -12,7 +12,8 @@
     var app = angular.module('clientApp', [
         'ngRoute',
         'restangular',   // add restangular for REST. Also did
-        'config'         // add environment
+        'config',         // add environment
+        'auth0', 'angular-storage', 'angular-jwt', 'ngRoute'  // add auth0
       ])
       .config(function ($routeProvider, RestangularProvider, ENV) {  // add RestangularProvider for REST
                                                                      // add ENV for environment
@@ -25,7 +26,7 @@
             templateUrl: 'views/main.html',
             controller: 'MainCtrl',
             //controllerAs: 'main'
-            controllerAs: 'vm'
+            controllerAs: 'user'
           })
           .when('/about', {
             templateUrl: 'views/about.html',
@@ -66,5 +67,48 @@
                   .otherwise({
                       redirectTo: '/'
                   });
-          });
+          })
+      .config(function($provide, authProvider, $httpProvider, jwtInterceptorProvider){  // Auth0
+        authProvider.init({
+          domain: 'sopf.auth0.com',
+          clientID: 'Vd2v0braxVQxH0lASGPNci2LlthA8fgn'
+        });
+        jwtInterceptorProvider.tokenGetter = function(store) {
+          return store.get('id_token');
+        }
+
+        // Redirect on Invalid requests
+        function redirect($q, $injector, auth, store, $location) {
+          return {
+            responseError: function(rejection) {
+              if (rejection.status === 401) {
+                auth.signout();
+                store.remove('profile');
+                store.remove('id_token');
+                $location.path('/about');
+              }
+              return $q.reject(rejection);
+            }
+          }
+        }
+
+        $provide.factory('redirect', redirect);
+        $httpProvider.interceptors.push('redirect');
+
+        $httpProvider.interceptors.push('jwtInterceptor');
+      })
+    .run(function($rootScope, auth, store, jwtHelper, $location) {    // To keep logged in after refresh if still have valid token
+      $rootScope.$on('$locationChangeStart', function() {
+        var token = store.get('id_token');
+        if (token) {
+          if (!jwtHelper.isTokenExpired(token)) {
+            if (!auth.isAuthenticated) {
+              auth.authenticate(store.get('profile'), token);
+            }
+          }
+        } else {
+          $location.path('/');
+        }
+      })
+    });
 }());
